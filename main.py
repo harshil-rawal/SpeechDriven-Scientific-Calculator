@@ -39,7 +39,7 @@ class Calculator(QWidget):
         
         self.last_answer = "0"
         self.setWindowTitle("Voice Calci")
-        self.setFixedSize(850, 700)
+        self.setFixedSize(920, 720)
 
         self.initUI()
         self.voice_enabled = True
@@ -53,29 +53,41 @@ class Calculator(QWidget):
     def initUI(self):
 
         main_layout = QHBoxLayout()
+        main_layout.setContentsMargins(24, 24, 24, 24)
+        main_layout.setSpacing(22)
 
         left_layout = QVBoxLayout()
         right_layout = QVBoxLayout()
+        left_layout.setSpacing(14)
+        right_layout.setSpacing(12)
 
         self.expression = QLineEdit()
+        self.expression.setObjectName("expression")
         self.expression.setReadOnly(True)
         self.expression.setAlignment(Qt.AlignmentFlag.AlignRight)
-        self.expression.setFont(QFont("Segoe UI", 20))
+        self.expression.setFont(QFont("Segoe UI", 18))
+        self.expression.setMinimumHeight(64)
 
         self.answer = QLabel("0")
+        self.answer.setObjectName("answer")
         self.answer.setAlignment(Qt.AlignmentFlag.AlignRight)
-        self.answer.setFont(QFont("Segoe UI", 32))
+        self.answer.setFont(QFont("Segoe UI Semibold", 42))
+        self.answer.setMinimumHeight(76)
 
         left_layout.addWidget(self.expression)
         left_layout.addWidget(self.answer)
         
         history_label = QLabel("History")
-        history_label.setFont(QFont("Arial", 16))
+        history_label.setObjectName("historyLabel")
+        history_label.setFont(QFont("Segoe UI Semibold", 16))
 
         self.history = QListWidget()
+        self.history.setObjectName("history")
         self.history.setFont(QFont("Segoe UI", 12))
         self.load_history()
         self.clear_history_btn = QPushButton("Clear History")
+        self.clear_history_btn.setObjectName("clearHistory")
+        self.clear_history_btn.setMinimumHeight(46)
 
         right_layout.addWidget(history_label)
         right_layout.addWidget(self.history)
@@ -84,6 +96,7 @@ class Calculator(QWidget):
         self.clear_history_btn.clicked.connect(self.clear_history)
         self.history.itemDoubleClicked.connect(self.use_history)
         grid = QGridLayout()
+        grid.setSpacing(10)
 
         buttons = [
             ["sin", "cos", "tan", "√"],
@@ -99,6 +112,7 @@ class Calculator(QWidget):
         for row, button_row in enumerate(buttons):
             for col, text in enumerate(button_row):
                 btn = QPushButton(text)
+                btn.setCursor(Qt.CursorShape.PointingHandCursor)
                 if text == "🎤":
                     self.mic_button = btn
                 if text in ["+", "-", "×", "÷", "="]:
@@ -131,8 +145,26 @@ class Calculator(QWidget):
                         }
                     """)
                     
-                btn.setMinimumSize(90, 70)
-                btn.setFont(QFont("Arial", 14))
+                btn.setStyleSheet("")
+
+                if text in ["+", "-", "Ã—", "Ã·", "="]:
+                    btn.setProperty("role", "operator")
+                elif text in ["C", "Ans", "(", ")"]:
+                    btn.setProperty("role", "control")
+                elif text in ["ðŸŽ¤", "ðŸ”Š", "â„¹ï¸"]:
+                    btn.setProperty("role", "voice")
+                elif text.replace(".", "", 1).isdigit():
+                    btn.setProperty("role", "number")
+                else:
+                    btn.setProperty("role", "function")
+
+                if text in ["+", "-", "="] or (row in [3, 4] and col == 3):
+                    btn.setProperty("role", "operator")
+                elif (row == 6 and col == 4) or (row == 7 and col in [4, 5]):
+                    btn.setProperty("role", "voice")
+
+                btn.setMinimumSize(88, 62)
+                btn.setFont(QFont("Segoe UI Semibold", 14))
 
                 btn.clicked.connect(self.button_clicked)
 
@@ -147,38 +179,124 @@ class Calculator(QWidget):
         self.setFocus()
         self.setStyleSheet("""
 QWidget{
-    background-color: #202124;
-    color: white;
+    background-color: #0f1115;
+    color: #f5f7fb;
+    font-family: "Segoe UI";
 }
 
 QLineEdit{
-    background-color: #303134;
-    border: 2px solid #555;
-    border-radius: 15px;
-    padding: 15px;
+    background-color: #171a21;
+    border: 1px solid #2b303a;
+    border-radius: 18px;
+    color: #aeb6c4;
+    padding: 14px 18px;
+    selection-background-color: #ff9f0a;
 }
 
-QLabel{
-    color: white;
+QLineEdit#expression{
+    font-size: 18px;
+}
+
+QLabel#answer{
+    background-color: #171a21;
+    border: 1px solid #2b303a;
+    border-radius: 22px;
+    color: #ffffff;
+    padding: 4px 20px 12px 20px;
+}
+
+QLabel#historyLabel{
+    color: #d7dce5;
+    padding: 4px 2px;
 }
 
 QPushButton{
-    background-color: #3c4043;
-    border-radius: 15px;
+    background-color: #2d323c;
+    border: 0;
+    border-radius: 28px;
+    color: #f8fafc;
     font-size: 16px;
+    padding: 8px;
 }
 
 QPushButton:hover{
-    background-color: #5f6368;
+    background-color: #3a414d;
 }
 
 QPushButton:pressed{
-    background-color: #80868b;
+    background-color: #4b5565;
+    padding-top: 10px;
+}
+
+QPushButton[role="number"]{
+    background-color: #333943;
+}
+
+QPushButton[role="function"]{
+    background-color: #707784;
+    color: #101217;
+}
+
+QPushButton[role="function"]:hover{
+    background-color: #858d9a;
+}
+
+QPushButton[role="control"]{
+    background-color: #4a505b;
+    color: #ffffff;
+}
+
+QPushButton[role="control"]:hover{
+    background-color: #5b6270;
+}
+
+QPushButton[role="operator"]{
+    background-color: #ff9f0a;
+    color: #ffffff;
+    font-size: 20px;
+}
+
+QPushButton[role="operator"]:hover{
+    background-color: #ffb13b;
+}
+
+QPushButton[role="voice"]{
+    background-color: #1f6feb;
+    color: #ffffff;
+}
+
+QPushButton[role="voice"]:hover{
+    background-color: #2f81f7;
 }
 
 QListWidget{
-    background-color: #303134;
-    border-radius: 15px;
+    background-color: #171a21;
+    border: 1px solid #2b303a;
+    border-radius: 18px;
+    color: #d7dce5;
+    padding: 10px;
+}
+
+QListWidget::item{
+    border-radius: 10px;
+    padding: 8px 10px;
+    margin: 2px 0;
+}
+
+QListWidget::item:selected{
+    background-color: #263247;
+    color: #ffffff;
+}
+
+QPushButton#clearHistory{
+    background-color: #232832;
+    border-radius: 16px;
+    color: #d7dce5;
+    font-size: 13px;
+}
+
+QPushButton#clearHistory:hover{
+    background-color: #303744;
 }
 """)
 
